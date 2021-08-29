@@ -23,11 +23,11 @@ def download_dataset():
     #Download, decompress and leaves only the csv
     download = f"kaggle datasets download -d {user}/{endopint}"
     decompress = f"unzip *.zip"
-    #delete = f"rm -rf *.zip"
+    delete = f"rm -rf *.zip"
     #make_directory = "mkdir data"
     lista = "ls >> archivos.txt"
     
-    for i in [download, decompress, lista]:
+    for i in [download, decompress, delete, lista]:
         os.system(i)
     
     #Move the csv to uour data folder
