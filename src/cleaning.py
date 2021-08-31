@@ -18,6 +18,7 @@ def download_dataset():
     
     #Gets the name ofA the dataset.zip
     endopint = url.split("/")[-1]
+    #endopint was already like this 
     user = url.split("/")[-2]
     
     #Download, decompress and leaves only the csv
@@ -31,8 +32,10 @@ def download_dataset():
         os.system(i)
     
     #Move the csv to uour data folder
-    move_and_delete = f"mv *.csv ./data/data_set.csv"
-    return os.system(move_and_delete)
+    for file in list("./archivos.txt"):
+        os.system(f"mv *.csv ./data/{file}")
+        f"{file}>> archivos.txt"
+    return None
 
 #fix col names
 def fix_col(df):
@@ -42,14 +45,15 @@ def fix_col(df):
     return df
 
 def nan(df):
-    """takes a data frame and removes all nan rows and columns"""
+    """takes a dataframe and removes all nan rows and columns"""
     df.dropna(axis=0, how = "all",inplace=True)
     df.dropna(axis=1, how = "all",inplace=True)
     return df
 
 def drop(df):
-    """asks for user autorization to drop columns with scarse data"""
+    """asks for user authorization to drop columns with scarse data"""
     percent_missing = round(df.isnull().sum() * 100 / len(df), 2)
+    #this I borrowed from Mª Luisa, it makes a pd.serie with percentages of missing data
     if input("drop poor data colums? [y/n] ")=="y":
         t=int(input("Threshold [%] for data "))
         for c,n in zip(percent_missing.index,percent_missing.values):
@@ -73,7 +77,7 @@ def filna(df):
         if col in col_n:
             df.fillna("UNK",inplace=True)
         else:
-            df.fillna(-1,inplace=True)
+            df.fillna(0,inplace=True)
     return df
 
 def division(df):
@@ -84,3 +88,43 @@ def division(df):
     #recover the division column
     df = df.merge(pl_d, left_index=True, right_index=True)
     return df
+
+def stats_(df):
+    """add relative to bodyweight stat columns"""
+    df["Squat%"]= round(df.BestSquatKg / df.BodyweightKg,3)
+    df["Bench%"]= round(df.BestBenchKg / df.BodyweightKg,3)
+    df["Dead%"]= round(df.BestDeadliftKg / df.BodyweightKg,3)
+    df["Total%"]= round(df.TotalKg / df.BodyweightKg,3)
+    return df
+
+def all_pos(df):
+    """there are some negative numbers floating around which represent failed attempts,
+     lets fix that"""
+    for col in list(df.select_dtypes(include=["int64", "float64"]).columns) :
+        df[col] = df[col].apply(lambda x: 0 if x<0 else x)
+    return df
+
+def fix_stat(df):
+    """the dataframe I scrapped toguether forms nicely but with some weird entries,
+     this remedies thet"""
+    for col in list(df.columns.values):
+        df[col] = df[col].apply(lambda x: float(re.search("(\d+.\d)",f"{x}")[0]))
+    return df
+
+#was not able to make this work, still..
+def weight_groups(item):
+    #distributes participants by weight
+    l= item.split("@")
+    t=float(str(l[0]))   ; a=l[1]; 
+    if a== "F":
+        if t < 49.4:
+            return "lw_female_m"
+        else:
+            return "mhw_female_m"
+    else:
+        if t < 70.7:
+            return "lw_male_m"
+        elif t > 107.7:
+            return "hw_male_m"
+        else:
+            return "mw_male_m"

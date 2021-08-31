@@ -4,7 +4,7 @@ sys.path.append('../')
 import src.cleaning as cl
 
 #import data from kaggle
-cl.download_dataset()
+#cl.download_dataset()
 
 #load datasets
 pl = pd.read_csv('./data/openpowerlifting.csv',encoding="ISO-8859-1")
@@ -29,4 +29,13 @@ cl.date(pl,m)
 cl.filna(pl)
 
 #export data frame
-pl.to_csv ('./data/pl.csv')
+pl.to_csv ('./output/pl.csv',index=False)
+
+#add columns with relative values
+cl.stats_(pl)
+
+#negative numbers are failed attempts
+cl.all_pos(pl)
+
+#export clean dataframe
+pl.to_csv ('./output/pl.csv', index=False)
